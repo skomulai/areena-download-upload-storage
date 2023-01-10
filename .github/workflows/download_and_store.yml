@@ -1,0 +1,54 @@
+name: Download Areena program and upload it to a cloud storage
+
+# Run only manually
+on:
+  workflow_dispatch:
+    inputs:
+      areena_url:
+        description: 'URL for YLE Areena program'
+        required: true
+        type: string
+
+env:
+  # Target for git checkout command, default = master
+  CHECKOUT_REF: master
+  # Additional parameters for yle-dl
+  YLE_DL_OPTS: --vfat --sublang fin --maxbitrate best
+  # Reads your .rclone.conf from repo secrets into an environment variable
+  RCLONE_CONF: ${{ secrets.RCLONE_CONF }} 
+  # Remote target reference in rclone configuration
+  RCLONE_REMOTE_REF: remote
+  # Path in cloud storage
+  RCLONE_REMOTE_CLOUD_PATH: areena_dls
+  # Additional parameters for rclone
+  RCLONE_OPTS: -P --create-empty-src-dirs
+
+jobs:
+  download-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install yle-dl and dependencies
+        run: |
+          git clone https://github.com/aajanki/yle-dl.git
+          cd yle-dl
+          git checkout $CHECKOUT_REF
+          pip3 install --user --upgrade yle-dl
+          sudo apt-get update  
+          sudo apt-get install ffmpeg
+        
+      - name: Install and configure rclone
+        run: |
+          sudo apt install rclone
+          echo "$RCLONE_CONF" > ~/.rclone.conf
+          chmod 600 ~/.rclone.conf      
+          
+      - name: Download Yle Areena program and upload to a cloud storage
+        run: |
+          echo yle-dl ${{ github.event.inputs.areena_url }} $YLE_DL_OPTS --create-dirs --destdir downloaded
+          yle-dl ${{ github.event.inputs.areena_url }} $YLE_DL_OPTS --create-dirs --destdir downloaded
+          cd downloaded
+          ls -alF .
+          echo rclone copy * $RCLONE_REMOTE_REF:$RCLONE_REMOTE_CLOUD_PATH $RCLONE_OPTS
+          rclone copy * $RCLONE_REMOTE_REF:$RCLONE_REMOTE_CLOUD_PATH $RCLONE_OPTS
+          
