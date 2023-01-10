@@ -1,4 +1,4 @@
-# Download Yle Areena program and upload it into a cloud storage
+# Download Yle Areena program and upload it to a cloud storage
 
 ## Introduction
 
