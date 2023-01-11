@@ -1,15 +1,16 @@
-# Download Yle Areena program and upload it to a cloud storage
+# Download Yle Areena program and upload it to cloud storage
 
 ## Introduction
 
 This repo contains a GitHub Actions Workflow file. If that action is run, it 
 1. takes as a parameter an Areena program URL (e.g. https://areena.yle.fi/1-50250719), 
-1. clones [yle-dl](https://github.com/aajanki/yle-dl.git) repo and checkouts branch/tag/commit specified in environment variable CHECKOUT_REF (default value = master)
+1. clones [yle-dl](https://github.com/aajanki/yle-dl.git) repo and checkouts branch/tag/commit specified in environment variable CHECKOUT_REF (default value = master),
 1. installs yle-dl locally using pip,
 1. downloads and installs required dependencies (ffmpeg),
-1. installs rclone and writes its configuration file (*.rclone.conf*) using value from environment variable RCLONE_CONF (which refers to a repo secret called RCLONE_CONF)
-1. downloads an Areena program that was given as a parameter
-1. uploads the downloaded video file to a cloud storage using rclone
+1. downloads the Areena program that was given as a parameter,
+1. installs mkvtoolnix and uses *extract_subtitles.sh* script to extract subtitles as individual srt files,
+1. installs rclone and writes its configuration file (*.rclone.conf*) using value from environment variable RCLONE_CONF (which refers to a repo secret called RCLONE_CONF),
+1. uploads the downloaded media file (and srt files) to cloud storage using rclone
 
 ## Configuration
 
@@ -18,10 +19,6 @@ Configuration is done via environment variables and repo secrets
 * CHECKOUT_REF
   * Parameter for git checkout (branch/tag/commit reference). This is included in case the current master branch is buggy, and you need to checkout e.g. the last working tag.
   * Default value = **master**
-
-* YLE_DL_OPTS:
-  * Additional parameters for yle-dl
-  * Default value = **--vfat --sublang fin --maxbitrate best**  (i.e. Windows-compatible filenames, Finnish subtitles, best quality)
 
 * RCLONE_CONF
   * Refers to a repo secret called RCLONE_CONF
@@ -39,6 +36,10 @@ Configuration is done via environment variables and repo secrets
 * RCLONE_OPTS: 
   * Additional parameters for rclone
   * Default value = **-P --create-empty-src-dirs**  (i.e. progress indicator, create empty dirs on remote storage)
+
+## yle-dl configuration
+
+When downloading media files, yle-dl uses parameters specified in the config file [.yledl.conf](.yledl.conf). Feel free to modify it to your liking.
 
 ## rclone configuration
 

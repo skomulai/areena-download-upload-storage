@@ -12,8 +12,6 @@ on:
 env:
   # Target for git checkout command, default = master
   CHECKOUT_REF: master
-  # Additional parameters for yle-dl
-  YLE_DL_OPTS: --vfat --sublang fin --maxbitrate best
   # Reads your .rclone.conf from repo secrets into an environment variable
   RCLONE_CONF: ${{ secrets.RCLONE_CONF }} 
   # Remote target reference in rclone configuration
@@ -28,27 +26,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3.3.0
       - name: Install yle-dl and dependencies
         run: |
           git clone https://github.com/aajanki/yle-dl.git
           cd yle-dl
           git checkout $CHECKOUT_REF
           pip3 install --user --upgrade yle-dl
-          sudo apt-get update  
-          sudo apt-get install ffmpeg
+          sudo apt update  
+          sudo apt install ffmpeg
         
+      - name: Download Yle Areena program
+        run: |
+          echo yle-dl ${{ github.event.inputs.areena_url }} -c ${{ github.workspace }}/.yledl.conf
+          yle-dl ${{ github.event.inputs.areena_url }} -c ${{ github.workspace }}/.yledl.conf
+          ls -alF downloaded/
+
+      # Feel free to remove this step and extract_subtitles.sh file from repo if you don't need individual srt files
+      - name: Extract subtitles as srt files
+        run: |
+          sudo apt install mkvtoolnix
+          chmod +x ${{ github.workspace }}/extract_subtitles.sh
+          ${{ github.workspace }}/extract_subtitles.sh downloaded/*.mkv
+          ls -alF downloaded/
+
       - name: Install and configure rclone
         run: |
           sudo apt install rclone
           echo "$RCLONE_CONF" > ~/.rclone.conf
           chmod 600 ~/.rclone.conf      
           
-      - name: Download Yle Areena program and upload to a cloud storage
+      - name: Upload to cloud storage
         run: |
-          echo yle-dl ${{ github.event.inputs.areena_url }} $YLE_DL_OPTS --create-dirs --destdir downloaded
-          yle-dl ${{ github.event.inputs.areena_url }} $YLE_DL_OPTS --create-dirs --destdir downloaded
-          cd downloaded
-          ls -alF .
-          echo rclone copy * $RCLONE_REMOTE_REF:$RCLONE_REMOTE_CLOUD_PATH $RCLONE_OPTS
-          rclone copy * $RCLONE_REMOTE_REF:$RCLONE_REMOTE_CLOUD_PATH $RCLONE_OPTS
+          echo rclone copy downloaded $RCLONE_REMOTE_REF:$RCLONE_REMOTE_CLOUD_PATH $RCLONE_OPTS
+          rclone copy downloaded $RCLONE_REMOTE_REF:$RCLONE_REMOTE_CLOUD_PATH $RCLONE_OPTS
           
