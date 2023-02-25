@@ -49,7 +49,6 @@ jobs:
           yt-dlp --windows-filenames ${{ github.event.inputs.quality_options }} ${{ github.event.inputs.subtitle_options }} ${{ github.event.inputs.video_url }}
           files=(*.mp4)
           videofile=${files[0]}
-          media_name=${videofile%.mp4}
           ffprobe "$videofile"
 
       - name: Install and configure rclone
