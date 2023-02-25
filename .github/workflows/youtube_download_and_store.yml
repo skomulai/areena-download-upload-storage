@@ -1,0 +1,65 @@
+name: Download Youtube video and upload it to a cloud storage
+
+# Run only manually
+on:
+  workflow_dispatch:
+    inputs:
+      video_url:
+        description: 'URL for Youtube video'
+        required: true
+        type: string
+      quality_options:
+        description: 'Quality parameters for yt-dlp'
+        required: false
+        type: string
+        default: '-f "bv*[ext=mp4]+ba[ext=m4a]"'
+      subtitle_options:
+        description: 'Subtitle parameters for yt-dlp'
+        required: false
+        type: string
+        default: '--no-write-auto-subs --write-subs --sub-langs "en-*"'
+
+env:
+  # Reads your .rclone.conf from repo secrets into an environment variable
+  RCLONE_CONF: ${{ secrets.RCLONE_CONF }} 
+  # Remote target reference in rclone configuration
+  RCLONE_REMOTE_REF: remote
+  # Path in cloud storage
+  RCLONE_REMOTE_CLOUD_PATH: media_dls
+  # Additional parameters for rclone
+  RCLONE_OPTS: -P --create-empty-src-dirs
+
+jobs:
+  youtube-download-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3.3.0
+      - name: Install yt-dlp
+        run: |
+          pip3 install yt-dlp
+          sudo apt update  
+          sudo apt install ffmpeg
+                  
+      - name: Download Youtube video
+        run: |
+          mkdir outputs
+          cd outputs             
+          yt-dlp --windows-filenames ${{ github.event.inputs.quality_options }} ${{ github.event.inputs.subtitle_options }} ${{ github.event.inputs.video_url }}
+          files=(*.mp4)
+          videofile=${files[0]}
+          media_name=${videofile%.mp4}
+          ffprobe "$videofile"
+
+      - name: Install and configure rclone
+        run: |
+          sudo apt install rclone
+          echo "$RCLONE_CONF" > ~/.rclone.conf
+          chmod 600 ~/.rclone.conf      
+
+      - name: Upload to cloud storage
+        run: |
+          echo rclone copy outputs $RCLONE_REMOTE_REF:$RCLONE_REMOTE_CLOUD_PATH $RCLONE_OPTS
+          rclone copy outputs $RCLONE_REMOTE_REF:$RCLONE_REMOTE_CLOUD_PATH $RCLONE_OPTS
+          
