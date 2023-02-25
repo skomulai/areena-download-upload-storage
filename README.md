@@ -18,7 +18,7 @@ Another one (_youtube_download_and_store.yml_) does the same thing for a YouTube
 1. downloads the Areena program that was given as a parameter,
 1. installs mkvtoolnix and uses *extract_subtitles.sh* script to extract subtitles as individual srt files,
 1. installs rclone and writes its configuration file (*.rclone.conf*) using value from environment variable RCLONE_CONF (which refers to a repo secret called RCLONE_CONF),
-1. uploads the downloaded media file (and srt files) to cloud storage using rclone
+1. uploads the downloaded media file (and its possible srt files) to cloud storage using rclone
 
 ### YouTube functionality
 
@@ -31,7 +31,7 @@ If that YouTube specific GitHub action is run, it
 1. downloads and installs required dependencies (ffmpeg),
 1. downloads the YouTube video (and its possible subtitles) that was given as a parameter,
 1. installs rclone and writes its configuration file (*.rclone.conf*) using value from environment variable RCLONE_CONF (which refers to a repo secret called RCLONE_CONF),
-1. uploads the downloaded media file (and srt files) to cloud storage using rclone
+1. uploads the downloaded media file (and its possible subtitle files) to cloud storage using rclone
 
 ## Configuration
 
