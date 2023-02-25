@@ -17,7 +17,7 @@ env:
   # Remote target reference in rclone configuration
   RCLONE_REMOTE_REF: remote
   # Path in cloud storage
-  RCLONE_REMOTE_CLOUD_PATH: areena_dls
+  RCLONE_REMOTE_CLOUD_PATH: media_dls
   # Additional parameters for rclone
   RCLONE_OPTS: -P --create-empty-src-dirs
 
