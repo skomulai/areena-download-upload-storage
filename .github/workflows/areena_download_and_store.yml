@@ -22,7 +22,7 @@ env:
   RCLONE_OPTS: -P --create-empty-src-dirs
 
 jobs:
-  download-upload:
+  yleareena-download-upload:
     runs-on: ubuntu-latest
 
     steps:
@@ -36,7 +36,7 @@ jobs:
           pip3 install --user --upgrade yle-dl
           sudo apt update  
           sudo apt install ffmpeg
-        
+
       - name: Download Yle Areena program
         run: |
           echo yle-dl ${{ github.event.inputs.areena_url }} -c ${{ github.workspace }}/.yledl.conf
@@ -56,7 +56,7 @@ jobs:
           sudo apt install rclone
           echo "$RCLONE_CONF" > ~/.rclone.conf
           chmod 600 ~/.rclone.conf      
-          
+
       - name: Upload to cloud storage
         run: |
           echo rclone copy downloaded $RCLONE_REMOTE_REF:$RCLONE_REMOTE_CLOUD_PATH $RCLONE_OPTS
