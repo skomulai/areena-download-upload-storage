@@ -1,8 +1,16 @@
-# Download Yle Areena program and upload it to cloud storage
+# Download Yle Areena/YouTube media file and upload it to cloud storage
 
 ## Introduction
 
-This repo contains a GitHub Actions Workflow file. If that action is run, it 
+This repo contains two GitHub Actions Workflow files. 
+
+One of those (_areena_download_and_store.yml_) is used to download Yle Areena media file and upload it to cloud storage. 
+
+Another one (_youtube_download_and_store.yml_) does the same thing for a YouTube video.
+
+### Yle Areena functionality
+
+ If that Yle Areena specific GitHub action is run, it 
 1. takes as a parameter an Areena program URL (e.g. https://areena.yle.fi/1-50250719), 
 1. clones [yle-dl](https://github.com/aajanki/yle-dl.git) repo and checkouts branch/tag/commit specified in environment variable CHECKOUT_REF (default value = master),
 1. installs yle-dl locally using pip,
@@ -12,12 +20,25 @@ This repo contains a GitHub Actions Workflow file. If that action is run, it
 1. installs rclone and writes its configuration file (*.rclone.conf*) using value from environment variable RCLONE_CONF (which refers to a repo secret called RCLONE_CONF),
 1. uploads the downloaded media file (and srt files) to cloud storage using rclone
 
+### YouTube functionality
+
+If that YouTube specific GitHub action is run, it 
+1. takes as a parameter:
+* YouTube video URL (e.g. https://www.youtube.com/watch?v=U7-dxzp6Jvs), 
+* quality and formation selection parameters for yt-dlp ([see more info here](https://github.com/yt-dlp/yt-dlp#format-selection)),
+* subtitle selection and download specific parameters for yt-dlp ([see more info here](https://github.com/yt-dlp/yt-dlp#subtitle-options)),
+2. installs yt-dlp using pip,
+1. downloads and installs required dependencies (ffmpeg),
+1. downloads the YouTube video (and its possible subtitles) that was given as a parameter,
+1. installs rclone and writes its configuration file (*.rclone.conf*) using value from environment variable RCLONE_CONF (which refers to a repo secret called RCLONE_CONF),
+1. uploads the downloaded media file (and srt files) to cloud storage using rclone
+
 ## Configuration
 
 Configuration is done via environment variables and repo secrets
 
 * CHECKOUT_REF
-  * Parameter for git checkout (branch/tag/commit reference). This is included in case the current master branch is buggy, and you need to checkout e.g. the last working tag.
+  * Parameter for _yle-dl_ git checkout (branch/tag/commit reference). This is included in case the current master branch is buggy, and you need to checkout e.g. the last working tag.
   * Default value = **master**
 
 * RCLONE_CONF
@@ -31,7 +52,7 @@ Configuration is done via environment variables and repo secrets
   
 * RCLONE_REMOTE_CLOUD_PATH
   * Path in the cloud storage where the video file will be uploaded
-  * Default value = **areena_dls**
+  * Default value = **media_dls**
 
 * RCLONE_OPTS: 
   * Additional parameters for rclone
@@ -55,6 +76,6 @@ drive_id = <<12345678>>
 drive_type = personal
 ```
 
-That is for OneDrive, so if you're using another cloud storage, your config may look different.
+That config is for OneDrive, but if you're using another cloud storage, your config probably looks different.
  
 
